@@ -7,14 +7,14 @@
     - install_packages
 
 - name: Установка и настройка nginx c кастомной страницей
-  hosts: nginx  # Будет работать на узлах в группе nginx
+  hosts: vm-02, vm-03, vm-04  # Будет работать на узлах в группе corps
   roles:
     - role: nginx_custom
   tags:
     - nginx_custom
 
 - name: Настройка проксирующего Nginx
-  hosts: vm_1  # Применяем только к vm_1 (прокси-серверу)
+  hosts: vm-02  # Применяем только к vm-02 (прокси-серверу)
   roles:
     - role: nginx_proxy
   tags:
