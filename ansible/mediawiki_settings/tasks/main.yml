@@ -20,7 +20,7 @@
       --pass="{{ mediawiki_admin_password }}" \
       --scriptpath="" \
       --server="http://{{ hostvars[inventory_hostname]['ansible_host'] }}" \
-      "s20691161wiki" \
+      "s1841463-wiki" \
       "admin"
   become: true
   become_user: www-data
