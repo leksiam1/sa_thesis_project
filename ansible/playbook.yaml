@@ -7,15 +7,70 @@
     - install_packages
 
 - name: Установка и настройка nginx c кастомной страницей
-  hosts: vm-02, vm-03, vm-04  # Будет работать на узлах в группе corps
+  hosts: vm-02, vm-03, vm-04 
   roles:
     - role: nginx_custom
   tags:
     - nginx_custom
 
 - name: Настройка проксирующего Nginx
-  hosts: vm-02  # Применяем только к vm-02 (прокси-серверу)
+  hosts: vm-02
   roles:
     - role: nginx_proxy
   tags:
     - nginx_proxy
+
+- name: Update Upgrade
+  hosts: vm-03, vm-04
+  roles:
+    - role: update_upgrade
+  tags:
+    - update_upgrade
+
+- name: Установка PostgreSQL 14
+  hosts: vm-03, vm-04
+  roles:
+    - role: pg_install
+  tags:
+    - pg_install
+
+- name: Подготовка postgres MediaWiki
+  hosts: vm-03, vm-04
+  vars_files:
+    - vars/vault/secrets.yml
+  roles:
+    - role: pg_mediawiki
+  tags:
+    - pg_mediawiki
+
+- name: Установка PHP
+  hosts: vm-03, vm-04
+  roles:
+    - role: php_install
+  tags:
+    - php_install
+
+- name: Установка MediaWiki
+  hosts: vm-03, vm-04
+  roles:
+    - role: mediawiki_install
+  tags:
+    - mediawiki_install
+
+- name: Первичная настройка MediaWiki
+  hosts: vm-03, vm-04
+  vars_files:
+    - vars/vault/secrets.yml
+  roles:
+    - role: mediawiki_settings
+  tags:
+    - mediawiki_settings
+
+- name: Настройка postgres master-replica
+  hosts: vm-03, vm-04
+  vars_files:
+    - vars/vault/secrets.yml
+  roles:
+    - role: pg_master_replica
+  tags:
+    - pg_master_replica
