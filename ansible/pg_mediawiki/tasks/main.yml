@@ -1,0 +1,29 @@
+---
+# tasks file for pg_mediawiki
+
+- name: Установка доп. модулей
+  ansible.builtin.apt:
+    name: "{{ item }}"
+    state: present
+  with_items:
+    - python3-psycopg2
+    - acl
+
+- name: Создание пользователя wikiuser
+  become: true
+  become_user: postgres
+  ansible.builtin.postgresql_user:
+    name: wikiuser
+    password: "{{ postgres_wikiuser_password }}"
+    state: present
+    role_attr_flags: "NOSUPERUSER,NOCREATEDB,NOCREATEROLE"
+  when: inventory_hostname == 'vm-03'
+
+- name: Создание базы данных my_wiki
+  become: true
+  become_user: postgres
+  ansible.builtin.postgresql_db:
+    name: my_wiki
+    owner: wikiuser
+    state: present
+  when: inventory_hostname == 'vm-03'

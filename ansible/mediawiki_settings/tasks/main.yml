@@ -1,0 +1,57 @@
+---
+# tasks file for mediawiki_settings
+
+# - name: Удалить конфиг MediaWiki
+#   ansible.builtin.file:
+#     path: /var/www/html/LocalSettings.php
+#     state: absent
+#   become: true
+
+- name: Запустить install.php для настройки MediaWiki
+  ansible.builtin.command: |
+    php /var/www/html/maintenance/install.php \
+      --confpath=/var/www/html \
+      --dbname="my_wiki" \
+      --dbuser="wikiuser" \
+      --dbpass="{{ postgres_wikiuser_password }}" \
+      --dbserver="{{ hostvars['vm-03']['ansible_host'] }}" \
+      --dbtype=postgres \
+      --lang=ru \
+      --pass="{{ mediawiki_admin_password }}" \
+      --scriptpath="" \
+      --server="http://{{ hostvars[inventory_hostname]['ansible_host'] }}" \
+      "s20691161wiki" \
+      "admin"
+  become: true
+  become_user: www-data
+  args:
+    creates: /var/www/html/LocalSettings.php  # Не запускать, если файл уже есть
+  no_log: true  # Скрывает пароли в логах
+  when: inventory_hostname == 'vm-03'
+
+- name: Конфиг vm-03 в переменную
+  ansible.builtin.slurp:
+    src: /var/www/html/LocalSettings.php
+  register: config_content
+  delegate_to: vm-03
+  when: inventory_hostname == 'vm-04'
+
+- name: Конфиг vm-04 из переменной
+  ansible.builtin.copy:
+    content: "{{ config_content.content | b64decode }}"
+    dest: /var/www/html/LocalSettings.php
+  when: inventory_hostname == 'vm-04'
+
+- name: Заменить веб-сервер конфига vm-04
+  ansible.builtin.replace:
+    path: /var/www/html/LocalSettings.php
+    regexp: "(\\$wgServer\\s*=\\s*[\"']).*?([\"'])"
+    replace: "\\1http://{{ hostvars[inventory_hostname]['ansible_host'] }}\\2"
+  when: inventory_hostname == 'vm-04'
+
+- name: Установить права конфига MediaWiki
+  ansible.builtin.file:
+    path: /var/www/html/LocalSettings.php
+    owner: www-data
+    group: www-data
+    mode: '600'

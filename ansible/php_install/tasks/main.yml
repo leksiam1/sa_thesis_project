@@ -1,0 +1,19 @@
+---
+# tasks file for php_install
+
+- name: Остановка Nginx
+  ansible.builtin.service:
+    name: nginx
+    state: stopped
+
+- name: Отключение автозапуска Nginx
+  ansible.builtin.service:
+    name: nginx
+    enabled: false
+
+- name: Установка программ PHP
+  ansible.builtin.apt:
+    name: "{{ item }}"
+    state: present
+  loop:
+    - "{{ php_packages_to_install }}"
