@@ -1,10 +1,15 @@
 ---
 # tasks file for zabbix_server_install
 
+- name: Установка docker
+  become: true
+  become_user: s1841463
+  ansible.builtin.command: "sudo apt install -y docker.io"
+
 - name: Установка docker-compose
-  ansible.builtin.apt:
-    name: docker-compose
-    state: present
+  become: true
+  become_user: s1841463
+  ansible.builtin.command: "sudo apt install -y docker-compose"
 
 - name: Подмена docker-compose.yml
   become: true

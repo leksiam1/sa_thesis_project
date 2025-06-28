@@ -21,7 +21,7 @@
     - nginx_proxy
 
 - name: Update Upgrade
-  hosts: vm-03, vm-04
+  hosts: vm-02, vm-03, vm-04
   roles:
     - role: update_upgrade
   tags:
